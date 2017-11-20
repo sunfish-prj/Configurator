@@ -1,0 +1,9 @@
+fileserver_backend:
+  - git
+  - roots
+gitfs_remotes:
+  - git://github.com/saltstack-formulas/docker-formula.git
+  - git://github.com/saltstack-formulas/mongodb-formula.git
+peer:
+  .*:
+    - x509.sign_remote_certificate

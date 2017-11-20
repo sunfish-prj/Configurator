@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-apiserver
+    image: gcr.io/google_containers/hyperkube:{{ salt['pillar.get']('k8s_cluster:k8s_version') }}
+    command:
+    - /hyperkube
+    - apiserver
+    - --bind-address=0.0.0.0
+    - --etcd-servers=http://{{ salt['pillar.get']('k8s_cluster:apiserver:ip') }}:2379
+    - --allow-privileged=true
+    - --service-cluster-ip-range={{ salt['pillar.get']('k8s_cluster:service_ip_range') }}
+    - --secure-port={{ salt['pillar.get']('k8s_cluster:apiserver:secure-port') }}
+    - --insecure-port={{ salt['pillar.get']('k8s_cluster:apiserver:insecure-port') }}
+    - --advertise-address={{ salt['pillar.get']('k8s_cluster:apiserver:ip') }}
+    - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
+    - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
+    - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --client-ca-file=/etc/kubernetes/ssl/ca.pem
+    - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    - --runtime-config=extensions/v1beta1/networkpolicies=true
+    - --anonymous-auth=false
+    - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+    livenessProbe:
+      httpGet:
+        host: 127.0.0.1
+        port: {{ salt['pillar.get']('k8s_cluster:apiserver:insecure-port') }}
+        path: /healthz
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    ports:
+    - containerPort: {{ salt['pillar.get']('k8s_cluster:apiserver:secure-port') }}
+      hostPort: {{ salt['pillar.get']('k8s_cluster:apiserver:secure-port') }}
+      name: https
+    - containerPort: {{ salt['pillar.get']('k8s_cluster:apiserver:insecure-port') }}
+      hostPort: {{ salt['pillar.get']('k8s_cluster:apiserver:insecure-port') }}
+      name: local
+    volumeMounts:
+    - mountPath: /etc/kubernetes/ssl
+      name: ssl-certs-kubernetes
+      readOnly: true
+    - mountPath: /etc/ssl/certs
+      name: ssl-certs-host
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/ssl
+    name: ssl-certs-kubernetes
+  - hostPath:
+      path: /usr/share/ca-certificates
+    name: ssl-certs-host

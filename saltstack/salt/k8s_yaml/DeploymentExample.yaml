@@ -1,0 +1,51 @@
+# Service deployment
+#
+#
+apiVersion: v1
+#Kind of kubernetes resource
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  # Type od service. ClusterIP make available this service only to the cluster's network via a virtual ip
+  type: ClusterIP
+  # In addition to the service's availability in the cluster, make the service available on these IPs
+  externalIPs:
+  - "192.168.71.102"
+  ports:
+    # Port to be exposed by this service
+  - port: 80
+    # Port of the pods targeted by the service
+    targetPort: 80
+  # Selector of the pods in which the traffic will be routed
+  selector:
+    app: nginx
+---
+# Deployment
+#
+#
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  # Number of replicas
+  replicas: 3
+  # Template of the pod to be replicated
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        # Hardware resources used by this pod
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 80

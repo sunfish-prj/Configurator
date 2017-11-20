@@ -1,0 +1,62 @@
+v7
+First implementation of Configurator
+Renamed node1 and node2 in 1 and 2
+Various bugfix
+
+v6
+
+Kubernetes v1.6.0 compatibility
+Fixed kubectl exec/logs not working: Now using manual InternalIP for kubernetes nodes
+Merged k8s_ca pillar in k8s_common pillar: node ip setting is now needed by each node
+Fixed starting of kubelet service: now watch for service file changes
+Fixed docker-py installation (needed by master reset_role)
+Added CNI version pillar
+Fixed kubelet settings for cni folders
+Added kubeconfig for kubernetes master node
+Deleted deprecated kubelet arg --apiserver
+Renamed salt custom execution module for kubernetes that used the kubernetes python client as k8s_custom_py_client
+Created salt custom execution module for kubernetes k8s_custom using kubectl with function for checking nodes, pods and services
+
+v5
+Fixed use of deb repository: switched to using single versioned binaries
+
+
+
+v4
+Created salt_rest_api.sls for setting up salt rest API (currently set up for serving only on 127.0.0.1 [can be changed] )
+salt_rest_api state should be applied to saltmaster automatically after machine creation
+Created a Go package (clusterproto/saltop) for executing the cluster operations through the salt rest api
+Created a small Go test program using this package (clusterproto)
+
+
+
+v3
+
+
+Created k8s_custom state module for kubernetes api operations management. Implemented as kubectl wrapper
+Substitute use of kubectl with the custom state module k8s_custom
+Created python module cluster_prototype.salt_operations for interacting with saltstack
+
+
+
+v2
+
+
+Unified kubernetes master installation
+Renamed worker -> node
+Changed hyperkube image: using google hyperkube image from quay one
+Separated kubeadm installation files
+Synced kubernetes node name - saltstack minion name
+Added orchestration file ( k8s_orchestrate.sls) for initialization of the whole cluster
+Added kubectl config file
+Added rough reset_role implementation for manual installation
+First partial implementation of the saltstack execution module for kubernetes (k8s_custom)
+Changed subnet to 192.168.71.0/24
+Various bugfix
+
+
+
+v1
+
+
+Initial release

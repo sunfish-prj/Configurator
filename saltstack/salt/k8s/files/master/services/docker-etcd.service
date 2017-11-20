@@ -1,0 +1,29 @@
+[Unit]
+Description=Etcd container
+Requires=docker.service
+After=docker.service
+
+{% set this_ip = salt['pillar.get']('k8s_cluster:apiserver:ip') %}
+
+[Service]
+Environment=ETCD_VERSION={{ salt['pillar.get']('k8s_cluster:etcd:version', 'v3.1.0') }}
+Environment=TOKEN=my-etcd-token
+Environment=CLUSTER_STATE=new
+Environment=NAME_1=etcd-node-0
+Environment=HOST_1={{ this_ip }}
+Environment=CLUSTER=etcd-node-0=http://{{ this_ip }}:2380
+Environment=THIS_NAME=etcd-node-0
+Environment=THIS_IP={{ this_ip }}
+Restart=always
+ExecStart=/usr/bin/docker run -v etc_data:/data.etcd --net=host --name etcd quay.io/coreos/etcd:${ETCD_VERSION} \
+    /usr/local/bin/etcd \
+    --data-dir=data.etcd --name ${THIS_NAME} \
+    --initial-advertise-peer-urls http://${THIS_IP}:2380 --listen-peer-urls http://${THIS_IP}:2380 \
+    --advertise-client-urls http://${THIS_IP}:2379 --listen-client-urls http://${THIS_IP}:2379 \
+    --initial-cluster ${CLUSTER} \
+    --initial-cluster-state ${CLUSTER_STATE} --initial-cluster-token ${TOKEN}
+ExecStop=/usr/bin/docker stop -t 2 etcd
+ExecStopPost=/usr/bin/docker rm -f etcd
+
+[Install]
+WantedBy=default.target

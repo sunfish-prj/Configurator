@@ -1,0 +1,6 @@
+master: 192.168.71.100
+
+mine_functions:
+  k8s_role:
+  - mine_function: grains.get
+  - k8s_role
